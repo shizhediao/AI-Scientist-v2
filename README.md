@@ -53,7 +53,8 @@ python launch_scientist_bfts.py \
 | Code generation (BFTS) | `nvidia/aws/anthropic/claude-opus-4-5` | `anthropic.claude-3-5-sonnet-20241022-v2:0` |
 | Feedback / VLM feedback | `nvidia/azure/openai/gpt-5.4` | `gpt-4o-2024-11-20` |
 | Paper writeup | `nvidia/azure/openai/gpt-5.4` | `o1-preview-2024-09-12` |
-| Citation / Review / Plots | `nvidia/azure/openai/gpt-5.4` | `gpt-4o-2024-11-20` / `o3-mini-2025-01-31` |
+| Citation / Plots | `nvidia/azure/openai/gpt-5.4` | `gpt-4o-2024-11-20` / `o3-mini-2025-01-31` |
+| Review | `nvidia/gcp/google/gemini-3.1-pro-preview` | `gpt-4o-2024-11-20` |
 
 ### Available NVIDIA Models
 

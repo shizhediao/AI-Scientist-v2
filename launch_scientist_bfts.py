@@ -115,7 +115,7 @@ def parse_arguments():
     parser.add_argument(
         "--model_review",
         type=str,
-        default="nvidia/azure/openai/gpt-5.4",
+        default="nvidia/gcp/google/gemini-3.1-pro-preview",
         help="Model to use for review main text and captions",
     )
     parser.add_argument(
