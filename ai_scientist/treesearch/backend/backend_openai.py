@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 import time
 
 from .utils import FunctionSpec, OutputType, opt_messages_to_list, backoff_create
@@ -9,6 +10,7 @@ from rich import print
 
 logger = logging.getLogger("ai-scientist")
 
+NVIDIA_INFERENCE_BASE_URL = "https://inference-api.nvidia.com"
 
 OPENAI_TIMEOUT_EXCEPTIONS = (
     openai.RateLimitError,
@@ -18,7 +20,13 @@ OPENAI_TIMEOUT_EXCEPTIONS = (
 )
 
 def get_ai_client(model: str, max_retries=2) -> openai.OpenAI:
-    if model.startswith("ollama/"):
+    if model.startswith("nvidia/"):
+        client = openai.OpenAI(
+            api_key=os.environ.get("NVIDIA_API_KEY", ""),
+            base_url=NVIDIA_INFERENCE_BASE_URL,
+            max_retries=max_retries,
+        )
+    elif model.startswith("ollama/"):
         client = openai.OpenAI(
             base_url="http://localhost:11434/v1", 
             max_retries=max_retries
@@ -44,8 +52,10 @@ def query(
         # force the model to use the function
         filtered_kwargs["tool_choice"] = func_spec.openai_tool_choice_dict
 
-    if filtered_kwargs.get("model", "").startswith("ollama/"):
-       filtered_kwargs["model"] = filtered_kwargs["model"].replace("ollama/", "")
+    if filtered_kwargs.get("model", "").startswith("nvidia/"):
+        filtered_kwargs["model"] = filtered_kwargs["model"].replace("nvidia/", "", 1)
+    elif filtered_kwargs.get("model", "").startswith("ollama/"):
+        filtered_kwargs["model"] = filtered_kwargs["model"].replace("ollama/", "")
 
     t0 = time.time()
     completion = backoff_create(

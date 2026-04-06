@@ -10,7 +10,17 @@ from ai_scientist.utils.token_tracker import track_token_usage
 
 MAX_NUM_TOKENS = 4096
 
+NVIDIA_INFERENCE_BASE_URL = "https://inference-api.nvidia.com"
+
 AVAILABLE_VLMS = [
+    # NVIDIA Inference API VLM models
+    "nvidia/azure/openai/gpt-4o",
+    "nvidia/azure/openai/gpt-4.1",
+    "nvidia/azure/openai/gpt-5.1",
+    "nvidia/azure/openai/gpt-5.2",
+    "nvidia/gcp/google/gemini-3-pro",
+    "nvidia/gcp/google/gemini-3.1-pro-preview",
+    # OpenAI VLM models
     "gpt-4o-2024-05-13",
     "gpt-4o-2024-08-06",
     "gpt-4o-2024-11-20",
@@ -51,7 +61,20 @@ def encode_image_to_base64(image_path: str) -> str:
 
 @track_token_usage
 def make_llm_call(client, model, temperature, system_message, prompt):
-    if model.startswith("ollama/"):
+    if model.startswith("nvidia/"):
+        nvidia_model = model.replace("nvidia/", "", 1)
+        return client.chat.completions.create(
+            model=nvidia_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *prompt,
+            ],
+            temperature=temperature,
+            max_tokens=MAX_NUM_TOKENS,
+            n=1,
+            stop=None,
+        )
+    elif model.startswith("ollama/"):
         return client.chat.completions.create(
             model=model.replace("ollama/", ""),
             messages=[
@@ -94,7 +117,18 @@ def make_llm_call(client, model, temperature, system_message, prompt):
 
 @track_token_usage
 def make_vlm_call(client, model, temperature, system_message, prompt):
-    if model.startswith("ollama/"):
+    if model.startswith("nvidia/"):
+        nvidia_model = model.replace("nvidia/", "", 1)
+        return client.chat.completions.create(
+            model=nvidia_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *prompt,
+            ],
+            temperature=temperature,
+            max_tokens=MAX_NUM_TOKENS,
+        )
+    elif model.startswith("ollama/"):
         return client.chat.completions.create(
             model=model.replace("ollama/", ""),
             messages=[
@@ -194,7 +228,13 @@ def get_response_from_vlm(
 
 def create_client(model: str) -> tuple[Any, str]:
     """Create client for vision-language model."""
-    if model in [
+    if model.startswith("nvidia/"):
+        print(f"Using NVIDIA Inference API with model {model}.")
+        return openai.OpenAI(
+            api_key=os.environ.get("NVIDIA_API_KEY", ""),
+            base_url=NVIDIA_INFERENCE_BASE_URL,
+        ), model
+    elif model in [
         "gpt-4o-2024-05-13",
         "gpt-4o-2024-08-06",
         "gpt-4o-2024-11-20",
@@ -301,7 +341,19 @@ def get_batch_responses_from_vlm(
         # Construct message with all images
         new_msg_history = msg_history + [{"role": "user", "content": content}]
 
-        if model.startswith("ollama/"):
+        if model.startswith("nvidia/"):
+            nvidia_model = model.replace("nvidia/", "", 1)
+            response = client.chat.completions.create(
+                model=nvidia_model,
+                messages=[
+                    {"role": "system", "content": system_message},
+                    *new_msg_history,
+                ],
+                temperature=temperature,
+                max_tokens=MAX_NUM_TOKENS,
+                n=n_responses,
+            )
+        elif model.startswith("ollama/"):
             response = client.chat.completions.create(
                 model=model.replace("ollama/", ""),
                 messages=[

@@ -25,8 +25,91 @@ This system autonomously generates hypotheses, runs experiments, analyzes data, 
 > **Caution!**
 > This codebase will execute Large Language Model (LLM)-written code. There are various risks and challenges associated with this autonomy, including the potential use of dangerous packages, uncontrolled web access, and the possibility of spawning unintended processes. Ensure that you run this within a controlled sandbox environment (e.g., a Docker container). Use at your own discretion.
 
+## NVIDIA Inference API Setup (Default Backend)
+
+This fork uses [NVIDIA Inference API](https://inference-api.nvidia.com) as the **default LLM backend**, providing unified access to models from OpenAI, Google, Anthropic, and more through a single API endpoint.
+
+### Quick Start
+
+1. **Set your API key:**
+
+```bash
+export NVIDIA_API_KEY="your-nvidia-api-key-here"
+```
+
+2. **That's it.** All default model configs already point to NVIDIA. Run experiments as usual:
+
+```bash
+python launch_scientist_bfts.py \
+  --load_ideas "ai_scientist/ideas/my_research_topic.json" \
+  --load_code \
+  --add_dataset_ref
+```
+
+### Default Model Mapping
+
+| Pipeline Stage | NVIDIA Model | Original Model |
+|---|---|---|
+| Code generation (BFTS) | `nvidia/gcp/google/gemini-3.1-pro-preview` | `anthropic.claude-3-5-sonnet-20241022-v2:0` |
+| Feedback / VLM feedback | `nvidia/azure/openai/gpt-4o` | `gpt-4o-2024-11-20` |
+| Paper writeup | `nvidia/azure/openai/gpt-5.1` | `o1-preview-2024-09-12` |
+| Citation / Review / Plots | `nvidia/azure/openai/gpt-4o` | `gpt-4o-2024-11-20` / `o3-mini-2025-01-31` |
+
+### Available NVIDIA Models
+
+Models are prefixed with `nvidia/` followed by the provider path:
+
+```
+nvidia/azure/openai/gpt-4o
+nvidia/azure/openai/gpt-4.1
+nvidia/azure/openai/gpt-4.1-mini
+nvidia/azure/openai/o3-mini
+nvidia/azure/openai/gpt-5.1
+nvidia/azure/openai/gpt-5.2
+nvidia/gcp/google/gemini-2.5-pro
+nvidia/gcp/google/gemini-3-pro
+nvidia/gcp/google/gemini-3.1-pro-preview
+```
+
+### Overriding Models
+
+You can override any model via CLI args or `bfts_config.yaml`:
+
+```bash
+# Use a different NVIDIA model for writeup
+python launch_scientist_bfts.py \
+  --load_ideas "ai_scientist/ideas/my_research_topic.json" \
+  --model_writeup "nvidia/azure/openai/gpt-5.2" \
+  --model_citation "nvidia/gcp/google/gemini-3-pro"
+```
+
+To change the BFTS experiment models, edit `bfts_config.yaml`:
+
+```yaml
+agent:
+  code:
+    model: nvidia/azure/openai/gpt-5.2   # or any nvidia/ model
+  feedback:
+    model: nvidia/gcp/google/gemini-3.1-pro-preview
+```
+
+### Switching Back to Direct APIs
+
+All original backends (OpenAI, Anthropic, Bedrock, Gemini, Ollama, etc.) are fully preserved. Simply use model names **without** the `nvidia/` prefix to bypass NVIDIA and call providers directly:
+
+```bash
+# Direct OpenAI
+python launch_scientist_bfts.py --model_writeup "o1-preview-2024-09-12"
+
+# Direct Anthropic (requires ANTHROPIC_API_KEY)
+# Set agent.code.model in bfts_config.yaml to: anthropic.claude-3-5-sonnet-20241022-v2:0
+```
+
+---
+
 ## Table of Contents
 
+0.  [NVIDIA Inference API Setup (Default Backend)](#nvidia-inference-api-setup-default-backend)
 1.  [Requirements](#requirements)
     *   [Installation](#installation)
     *   [Supported Models and API Keys](#supported-models-and-api-keys)
@@ -86,9 +169,15 @@ Our code can optionally use a Semantic Scholar API Key (`S2_API_KEY`) for higher
 
 Ensure you provide the necessary API keys as environment variables for the models you intend to use. For example:
 ```bash
-export OPENAI_API_KEY="YOUR_OPENAI_KEY_HERE"
+# NVIDIA Inference API (default backend)
+export NVIDIA_API_KEY="YOUR_NVIDIA_KEY_HERE"
+
+# Optional: Semantic Scholar for literature search
 export S2_API_KEY="YOUR_S2_KEY_HERE"
-# Set AWS credentials if using Bedrock
+
+# Only needed if using direct (non-NVIDIA) providers:
+# export OPENAI_API_KEY="YOUR_OPENAI_KEY_HERE"
+# export GEMINI_API_KEY="YOUR_GEMINI_KEY_HERE"
 # export AWS_ACCESS_KEY_ID="YOUR_AWS_ACCESS_KEY_ID"
 # export AWS_SECRET_ACCESS_KEY="YOUR_AWS_SECRET_KEY"
 # export AWS_REGION_NAME="your-aws-region"
@@ -141,6 +230,14 @@ Key tree search configuration parameters in `bfts_config.yaml`:
 Example command to run AI-Scientist-v2 using a generated idea file (e.g., `my_research_topic.json`). Please review `bfts_config.yaml` for detailed tree search parameters (the default config includes `claude-3-5-sonnet` for experiments). Do not set `load_code` if you do not want to initialize experimentation with a code snippet.
 
 ```bash
+# Using NVIDIA Inference API (default, requires NVIDIA_API_KEY)
+python launch_scientist_bfts.py \
+ --load_ideas "ai_scientist/ideas/my_research_topic.json" \
+ --load_code \
+ --add_dataset_ref \
+ --num_cite_rounds 20
+
+# Or with explicit model overrides (e.g., using original direct APIs)
 python launch_scientist_bfts.py \
  --load_ideas "ai_scientist/ideas/my_research_topic.json" \
  --load_code \

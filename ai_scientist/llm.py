@@ -10,7 +10,21 @@ import openai
 
 MAX_NUM_TOKENS = 4096
 
+NVIDIA_INFERENCE_BASE_URL = "https://inference-api.nvidia.com"
+
 AVAILABLE_LLMS = [
+    # NVIDIA Inference API models (https://inference-api.nvidia.com)
+    # Env var: NVIDIA_API_KEY
+    "nvidia/azure/openai/gpt-4o",
+    "nvidia/azure/openai/gpt-4.1",
+    "nvidia/azure/openai/gpt-4.1-mini",
+    "nvidia/azure/openai/o3-mini",
+    "nvidia/azure/openai/gpt-5.1",
+    "nvidia/azure/openai/gpt-5.2",
+    "nvidia/gcp/google/gemini-2.5-pro",
+    "nvidia/gcp/google/gemini-3-pro",
+    "nvidia/gcp/google/gemini-3.1-pro-preview",
+    # Anthropic Claude
     "claude-3-5-sonnet-20240620",
     "claude-3-5-sonnet-20241022",
     # OpenAI models
@@ -98,7 +112,25 @@ def get_batch_responses_from_llm(
     if msg_history is None:
         msg_history = []
 
-    if model.startswith("ollama/"):
+    if model.startswith("nvidia/"):
+        nvidia_model = model.replace("nvidia/", "", 1)
+        new_msg_history = msg_history + [{"role": "user", "content": msg}]
+        response = client.chat.completions.create(
+            model=nvidia_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *new_msg_history,
+            ],
+            temperature=temperature,
+            max_tokens=MAX_NUM_TOKENS,
+            n=n_responses,
+            stop=None,
+        )
+        content = [r.message.content for r in response.choices]
+        new_msg_history = [
+            new_msg_history + [{"role": "assistant", "content": c}] for c in content
+        ]
+    elif model.startswith("ollama/"):
         new_msg_history = msg_history + [{"role": "user", "content": msg}]
         response = client.chat.completions.create(
             model=model.replace("ollama/", ""),
@@ -214,7 +246,20 @@ def get_batch_responses_from_llm(
 
 @track_token_usage
 def make_llm_call(client, model, temperature, system_message, prompt):
-    if model.startswith("ollama/"):
+    if model.startswith("nvidia/"):
+        nvidia_model = model.replace("nvidia/", "", 1)
+        return client.chat.completions.create(
+            model=nvidia_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *prompt,
+            ],
+            temperature=temperature,
+            max_tokens=MAX_NUM_TOKENS,
+            n=1,
+            stop=None,
+        )
+    elif model.startswith("ollama/"):
         return client.chat.completions.create(
             model=model.replace("ollama/", ""),
             messages=[
@@ -277,7 +322,23 @@ def get_response_from_llm(
     if msg_history is None:
         msg_history = []
 
-    if "claude" in model:
+    if model.startswith("nvidia/"):
+        nvidia_model = model.replace("nvidia/", "", 1)
+        new_msg_history = msg_history + [{"role": "user", "content": msg}]
+        response = client.chat.completions.create(
+            model=nvidia_model,
+            messages=[
+                {"role": "system", "content": system_message},
+                *new_msg_history,
+            ],
+            temperature=temperature,
+            max_tokens=MAX_NUM_TOKENS,
+            n=1,
+            stop=None,
+        )
+        content = response.choices[0].message.content
+        new_msg_history = new_msg_history + [{"role": "assistant", "content": content}]
+    elif "claude" in model:
         new_msg_history = msg_history + [
             {
                 "role": "user",
@@ -478,7 +539,13 @@ def extract_json_between_markers(llm_output: str) -> dict | None:
 
 
 def create_client(model) -> tuple[Any, str]:
-    if model.startswith("claude-"):
+    if model.startswith("nvidia/"):
+        print(f"Using NVIDIA Inference API with model {model}.")
+        return openai.OpenAI(
+            api_key=os.environ.get("NVIDIA_API_KEY", ""),
+            base_url=NVIDIA_INFERENCE_BASE_URL,
+        ), model
+    elif model.startswith("claude-"):
         print(f"Using Anthropic API with model {model}.")
         return anthropic.Anthropic(), model
     elif model.startswith("bedrock") and "claude" in model:
@@ -493,6 +560,7 @@ def create_client(model) -> tuple[Any, str]:
         print(f"Using Ollama with model {model}.")
         return openai.OpenAI(
             api_key=os.environ.get("OLLAMA_API_KEY", ""),
+            
             base_url="http://localhost:11434/v1",
         ), model
     elif "gpt" in model:
