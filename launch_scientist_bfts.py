@@ -85,19 +85,19 @@ def parse_arguments():
     parser.add_argument(
         "--model_agg_plots",
         type=str,
-        default="nvidia/azure/openai/gpt-4o",
+        default="nvidia/azure/openai/gpt-5.4",
         help="Model to use for plot aggregation",
     )
     parser.add_argument(
         "--model_writeup",
         type=str,
-        default="nvidia/azure/openai/gpt-5.1",
+        default="nvidia/azure/openai/gpt-5.4",
         help="Model to use for writeup",
     )
     parser.add_argument(
         "--model_citation",
         type=str,
-        default="nvidia/azure/openai/gpt-4o",
+        default="nvidia/azure/openai/gpt-5.4",
         help="Model to use for citation gathering",
     )
     parser.add_argument(
@@ -109,13 +109,13 @@ def parse_arguments():
     parser.add_argument(
         "--model_writeup_small",
         type=str,
-        default="nvidia/azure/openai/gpt-4o",
+        default="nvidia/azure/openai/gpt-5.4",
         help="Smaller model to use for writeup",
     )
     parser.add_argument(
         "--model_review",
         type=str,
-        default="nvidia/azure/openai/gpt-4o",
+        default="nvidia/azure/openai/gpt-5.4",
         help="Model to use for review main text and captions",
     )
     parser.add_argument(

@@ -50,10 +50,10 @@ python launch_scientist_bfts.py \
 
 | Pipeline Stage | NVIDIA Model | Original Model |
 |---|---|---|
-| Code generation (BFTS) | `nvidia/gcp/google/gemini-3.1-pro-preview` | `anthropic.claude-3-5-sonnet-20241022-v2:0` |
-| Feedback / VLM feedback | `nvidia/azure/openai/gpt-4o` | `gpt-4o-2024-11-20` |
-| Paper writeup | `nvidia/azure/openai/gpt-5.1` | `o1-preview-2024-09-12` |
-| Citation / Review / Plots | `nvidia/azure/openai/gpt-4o` | `gpt-4o-2024-11-20` / `o3-mini-2025-01-31` |
+| Code generation (BFTS) | `nvidia/aws/anthropic/claude-opus-4-5` | `anthropic.claude-3-5-sonnet-20241022-v2:0` |
+| Feedback / VLM feedback | `nvidia/azure/openai/gpt-5.4` | `gpt-4o-2024-11-20` |
+| Paper writeup | `nvidia/azure/openai/gpt-5.4` | `o1-preview-2024-09-12` |
+| Citation / Review / Plots | `nvidia/azure/openai/gpt-5.4` | `gpt-4o-2024-11-20` / `o3-mini-2025-01-31` |
 
 ### Available NVIDIA Models
 

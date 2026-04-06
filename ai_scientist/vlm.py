@@ -16,9 +16,13 @@ AVAILABLE_VLMS = [
     # NVIDIA Inference API VLM models
     "nvidia/azure/openai/gpt-4o",
     "nvidia/azure/openai/gpt-4.1",
+    "nvidia/azure/openai/gpt-5",
     "nvidia/azure/openai/gpt-5.1",
     "nvidia/azure/openai/gpt-5.2",
-    "nvidia/gcp/google/gemini-3-pro",
+    "nvidia/azure/openai/gpt-5.4",
+    "nvidia/aws/anthropic/claude-opus-4-5",
+    "nvidia/azure/anthropic/claude-opus-4-5",
+    "nvidia/gcp/google/gemini-3-pro-image-preview",
     "nvidia/gcp/google/gemini-3.1-pro-preview",
     # OpenAI VLM models
     "gpt-4o-2024-05-13",

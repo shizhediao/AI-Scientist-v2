@@ -23,7 +23,7 @@ exec:
 generate_report: True
 # LLM settings for final report from journal
 report:
-  model: nvidia/azure/openai/gpt-4o
+  model: nvidia/azure/openai/gpt-5.4
   temp: 1.0
 
 experiment:
@@ -54,20 +54,20 @@ agent:
 
   # LLM settings for coding
   code:
-    model: nvidia/gcp/google/gemini-3.1-pro-preview
+    model: nvidia/aws/anthropic/claude-opus-4-5
     # Previously: anthropic.claude-3-5-sonnet-20241022-v2:0
     temp: 1.0
     max_tokens: 12000
 
   # LLM settings for evaluating program output / tracebacks
   feedback:
-    model: nvidia/azure/openai/gpt-4o
+    model: nvidia/azure/openai/gpt-5.4
     # Previously: gpt-4o-2024-11-20
     temp: 0.5
     max_tokens: 8192
 
   vlm_feedback:
-    model: nvidia/azure/openai/gpt-4o
+    model: nvidia/azure/openai/gpt-5.4
     # Previously: gpt-4o-2024-11-20
     temp: 0.5
     max_tokens: null

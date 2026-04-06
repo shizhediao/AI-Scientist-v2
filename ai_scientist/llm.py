@@ -15,15 +15,35 @@ NVIDIA_INFERENCE_BASE_URL = "https://inference-api.nvidia.com"
 AVAILABLE_LLMS = [
     # NVIDIA Inference API models (https://inference-api.nvidia.com)
     # Env var: NVIDIA_API_KEY
+    # Azure / OpenAI
     "nvidia/azure/openai/gpt-4o",
     "nvidia/azure/openai/gpt-4.1",
     "nvidia/azure/openai/gpt-4.1-mini",
-    "nvidia/azure/openai/o3-mini",
+    "nvidia/azure/openai/gpt-5",
     "nvidia/azure/openai/gpt-5.1",
     "nvidia/azure/openai/gpt-5.2",
+    "nvidia/azure/openai/gpt-5.4",
+    "nvidia/azure/openai/gpt-5.1-codex",
+    "nvidia/azure/openai/gpt-5.2-codex",
+    "nvidia/azure/openai/o1",
+    "nvidia/azure/openai/o3",
+    "nvidia/azure/openai/o3-mini",
+    "nvidia/azure/openai/o4-mini",
+    # Azure / Anthropic Claude
+    "nvidia/azure/anthropic/claude-sonnet-4-5",
+    "nvidia/azure/anthropic/claude-sonnet-4-6",
+    "nvidia/azure/anthropic/claude-opus-4-5",
+    "nvidia/azure/anthropic/claude-opus-4-6",
+    # AWS / Anthropic Claude
+    "nvidia/aws/anthropic/claude-opus-4-5",
+    "nvidia/aws/anthropic/bedrock-claude-sonnet-4-5-v1",
+    "nvidia/aws/anthropic/bedrock-claude-opus-4-6",
+    # GCP / Google Gemini
     "nvidia/gcp/google/gemini-2.5-pro",
-    "nvidia/gcp/google/gemini-3-pro",
+    "nvidia/gcp/google/gemini-2.5-flash",
+    "nvidia/gcp/google/gemini-3-pro-image-preview",
     "nvidia/gcp/google/gemini-3.1-pro-preview",
+    "nvidia/gcp/google/gemini-3.1-flash-lite-preview",
     # Anthropic Claude
     "claude-3-5-sonnet-20240620",
     "claude-3-5-sonnet-20241022",
@@ -560,7 +580,6 @@ def create_client(model) -> tuple[Any, str]:
         print(f"Using Ollama with model {model}.")
         return openai.OpenAI(
             api_key=os.environ.get("OLLAMA_API_KEY", ""),
-            
             base_url="http://localhost:11434/v1",
         ), model
     elif "gpt" in model:
